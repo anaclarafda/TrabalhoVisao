@@ -5,23 +5,20 @@ try:
     import torchvision
     import torchvision.transforms as transforms
 except ModuleNotFoundError:
-    print("Erro: PyTorch não está instalado. Instale com 'pip install torch torchvision'.")
     exit()
 
-# Configurações gerais
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-BATCH_SIZE = 128
-NUM_EPOCHS = 20
-LEARNING_RATE = 0.001
+BATCH_SIZE = 128 #Aqui podemos alterar o tamanho da batch
+NUM_EPOCHS = 50 #Aqui podemos alterar o numero de epocas
+LEARNING_RATE = 0.0001 #Aqui podemos alterar o learning rate
 
-# Transforms para pré-processamento do CIFAR-10
 transform = transforms.Compose([
-    transforms.Resize(32),
-    transforms.ToTensor(),
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-])
+    transforms.Resize(32), #Redimensiona as imagens para 32x32 pixels
+    transforms.ToTensor(),#Converte o formato da imagem para um tensor do PyTorch
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)) #Normaliza os valores dos canais RGB,  𝜇=(0.5,0.5,0.5) e σ=(0.5,0.5,0.5)
+    ])
 
-# Carregar dataset CIFAR-10
+# Carregar dataset CIFAR-10, carregamento eficiente das imagens 
 dataset_train = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
 dataset_test = torchvision.datasets.CIFAR10(root='./data', train=False, download=True, transform=transform)
 
@@ -53,10 +50,10 @@ class AlexNet(nn.Module):
             nn.MaxPool2d(kernel_size=2, stride=2),
         )
         self.classifier = nn.Sequential(
-            nn.Dropout(0.3),
+            nn.Dropout(0.3), #Aqui podemos alterar o dropout
             nn.Linear(256 * 4 * 4, 4096),
             nn.ReLU(inplace=True),
-            nn.Dropout(0.3),
+            nn.Dropout(0.3), #Aqui podemos alterar o dropout
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
             nn.Linear(4096, num_classes),
