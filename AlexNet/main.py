@@ -4,13 +4,17 @@ try:
     import torch.optim as optim
     import torchvision
     import torchvision.transforms as transforms
+    from sklearn.metrics import confusion_matrix
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    import numpy as np  # Adicionando o numpy
 except ModuleNotFoundError:
     exit()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 BATCH_SIZE = 128 #Aqui podemos alterar o tamanho da batch
 NUM_EPOCHS = 50 #Aqui podemos alterar o numero de epocas
-LEARNING_RATE = 0.0001 #Aqui podemos alterar o learning rate
+LEARNING_RATE = 0.001 #Aqui podemos alterar o learning rate
 
 transform = transforms.Compose([
     transforms.Resize(32), #Redimensiona as imagens para 32x32 pixels
@@ -125,3 +129,40 @@ def test_per_class():
 train()
 test()
 test_per_class()  #  Chama a nova função aqui
+
+classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 
+           'dog', 'frog', 'horse', 'ship', 'truck']
+
+
+def generate_confusion_matrix():
+    model.eval()  # Coloca o modelo em modo de avaliação
+    all_labels = []
+    all_predictions = []
+    
+    # Desabilita o cálculo de gradientes para economizar memória e computação
+    with torch.no_grad():
+        for images, labels in test_loader:  # Usa o test_loader para obter as imagens de teste
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)  # Passa as imagens pelo modelo
+            _, predicted = torch.max(outputs, 1)  # Obtém as previsões
+            
+            all_labels.extend(labels.cpu().numpy())  # Adiciona os rótulos reais
+            all_predictions.extend(predicted.cpu().numpy())  # Adiciona as previsões feitas pelo modelo
+    
+    return np.array(all_labels), np.array(all_predictions)
+
+# Gerando os rótulos reais e as previsões
+y_true, y_pred = generate_confusion_matrix()
+
+# Calculando a matriz de confusão
+conf_matrix = confusion_matrix(y_true, y_pred)
+
+# Plotando a matriz de confusão
+plt.figure(figsize=(10, 7))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=classes, yticklabels=classes)
+plt.xlabel('Previsões')
+plt.ylabel('Rótulos reais')
+plt.title('Matriz de Confusão')
+plt.show()
+
+
